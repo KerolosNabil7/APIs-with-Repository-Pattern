@@ -28,6 +28,7 @@ namespace RepositoryPatternWithUOW.EF.Repositories
             return await _context.Set<T>().ToListAsync();
         }
         #endregion
+
         #region GetById
         public T GetById(int id)
         {
@@ -38,6 +39,7 @@ namespace RepositoryPatternWithUOW.EF.Repositories
             return await _context.Set<T>().FindAsync(id);
         }
         #endregion
+
         #region Find With criteria
         public T Find(Expression<Func<T, bool>> criteria, string[] includes = null)
         {
@@ -58,6 +60,7 @@ namespace RepositoryPatternWithUOW.EF.Repositories
             return await query.SingleOrDefaultAsync(criteria);
         }
         #endregion
+
         #region FindAll With criteria
         public IEnumerable<T> FindAll(Expression<Func<T, bool>> criteria, string[] includes = null)
         {
@@ -78,6 +81,7 @@ namespace RepositoryPatternWithUOW.EF.Repositories
             return await query.Where(criteria).ToListAsync();
         }
         #endregion
+
         #region FindAll overload
         public IEnumerable<T> FindAll(Expression<Func<T, bool>> criteria, int? take, int? skip, 
             Expression<Func<T, object>> orederBy = null, string orderByDirection = OrderBy.Ascending)
@@ -120,6 +124,7 @@ namespace RepositoryPatternWithUOW.EF.Repositories
             return await query.ToListAsync();
         }
         #endregion
+
         #region Add
         public T Add(T entity)
         {
@@ -134,6 +139,7 @@ namespace RepositoryPatternWithUOW.EF.Repositories
             return entity;
         }
         #endregion
+
         #region Add Range
         public IEnumerable<T> AddRange(IEnumerable<T> entities)
         {
@@ -148,6 +154,7 @@ namespace RepositoryPatternWithUOW.EF.Repositories
             return entities;
         }
         #endregion
+
         #region Update
         public T Update(T entity)
         {
@@ -156,6 +163,7 @@ namespace RepositoryPatternWithUOW.EF.Repositories
             return entity;
         }
         #endregion
+
         #region Delete
         public void Delete(T entity)
         {
@@ -168,6 +176,7 @@ namespace RepositoryPatternWithUOW.EF.Repositories
             _context.SaveChanges();
         }
         #endregion
+
         #region Count
         public int Count()
         {
@@ -178,6 +187,7 @@ namespace RepositoryPatternWithUOW.EF.Repositories
             return await _context.Set<T>().CountAsync();
         }
         #endregion
+
         #region Count With Criteria
         public int Count(Expression<Func<T, bool>> expression)
         {
@@ -188,5 +198,6 @@ namespace RepositoryPatternWithUOW.EF.Repositories
             return await _context.Set<T>().CountAsync(expression);
         }
         #endregion
+
     }
 }
