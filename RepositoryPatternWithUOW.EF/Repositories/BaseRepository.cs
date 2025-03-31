@@ -129,13 +129,11 @@ namespace RepositoryPatternWithUOW.EF.Repositories
         public T Add(T entity)
         {
             _context.Set<T>().Add(entity);
-            _context.SaveChanges();
             return entity;
         }
         public async Task<T> AddAsync(T entity)
         {
             await _context.Set<T>().AddAsync(entity);
-            _context.SaveChanges();
             return entity;
         }
         #endregion

@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using RepositoryPatternWithUOW.Core;
 using RepositoryPatternWithUOW.Core.Interfaces;
 using RepositoryPatternWithUOW.EF;
 using RepositoryPatternWithUOW.EF.Repositories;
@@ -16,8 +17,12 @@ builder.Services.AddDbContext<ApplicationDbContext>(options=>
 options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"), 
                     b=>b.MigrationsAssembly(typeof(ApplicationDbContext).Assembly.FullName))
 );
+
 // Register Repository Pattern
-builder.Services.AddTransient(typeof(IBaseRepository<>), typeof(BaseRepository<>));
+//builder.Services.AddTransient(typeof(IBaseRepository<>), typeof(BaseRepository<>));
+
+// Register Unit of Work
+builder.Services.AddTransient<IUnitOfWork, UnitOfWork>();
 
 var app = builder.Build();
 

@@ -31,9 +31,9 @@ namespace RepositoryPatternWithUOW.Core.Interfaces
         #endregion
 
         #region FindAll Overload
-        IEnumerable<T> FindAll(Expression<Func<T, bool>> match, int? take, int? skip, 
+        IEnumerable<T> FindAll(Expression<Func<T, bool>> criteria, int? take, int? skip, 
             Expression<Func<T, object>> orederBy = null, string orderByDirection = OrderBy.Ascending);
-        Task<IEnumerable<T>> FindAllAsync(Expression<Func<T, bool>> match, int? take, int? skip,
+        Task<IEnumerable<T>> FindAllAsync(Expression<Func<T, bool>> criteria, int? take, int? skip,
             Expression<Func<T, object>> orederBy = null, string orderByDirection = OrderBy.Ascending);
         #endregion
 

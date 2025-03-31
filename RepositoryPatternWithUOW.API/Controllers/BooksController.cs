@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using RepositoryPatternWithUOW.Core;
 using RepositoryPatternWithUOW.Core.Consts;
 using RepositoryPatternWithUOW.Core.Interfaces;
 using RepositoryPatternWithUOW.Core.Models;
@@ -10,22 +11,23 @@ namespace RepositoryPatternWithUOW.API.Controllers
     [ApiController]
     public class BooksController : ControllerBase
     {
-        private readonly IBaseRepository<Book> _booksRepository;
-        public BooksController(IBaseRepository<Book> booksRepository)
+        //private readonly IBaseRepository<Book> _unitOfWork.Books;
+        private readonly IUnitOfWork _unitOfWork;
+        public BooksController(IUnitOfWork unitOfWork)
         {
-            _booksRepository = booksRepository;
+            _unitOfWork = unitOfWork;
         }
 
         #region GetAll
         [HttpGet("GetAll")]
         public IActionResult GetAll()
         {
-            return Ok(_booksRepository.GetAll());
+            return Ok(_unitOfWork.Books.GetAll());
         }
         [HttpGet("GetAllAsync")]
         public async Task<IActionResult> GetAllAsync()
         {
-            return Ok(await _booksRepository.GetAllAsync());
+            return Ok(await _unitOfWork.Books.GetAllAsync());
         }
         #endregion
 
@@ -33,12 +35,12 @@ namespace RepositoryPatternWithUOW.API.Controllers
         [HttpGet("GetById")]
         public IActionResult GetById()
         {
-            return Ok(_booksRepository.GetById(1));
+            return Ok(_unitOfWork.Books.GetById(1));
         }
         [HttpGet("GetByIdAsync")]
         public async Task<IActionResult> GetByIdAsync()
         {
-            return Ok(await _booksRepository.GetByIdAsync(1));
+            return Ok(await _unitOfWork.Books.GetByIdAsync(1));
         }
         #endregion
 
@@ -46,12 +48,12 @@ namespace RepositoryPatternWithUOW.API.Controllers
         [HttpGet("GetByName")]
         public IActionResult GetByName()
         {
-            return Ok(_booksRepository.Find(b => b.Title == "New Book", new string[] { "Author" }));
+            return Ok(_unitOfWork.Books.Find(b => b.Title == "New Book", new string[] { "Author" }));
         }
         [HttpGet("GetByNameAsync")]
         public async Task<IActionResult> GetByNameAsync()
         {
-            return Ok(await _booksRepository.FindAsync(b => b.Title == "New Book", new string[] {"Author"}));
+            return Ok(await _unitOfWork.Books.FindAsync(b => b.Title == "New Book", new string[] {"Author"}));
         }
         #endregion
 
@@ -59,12 +61,12 @@ namespace RepositoryPatternWithUOW.API.Controllers
         [HttpGet("GetAllWithAuthors")]
         public IActionResult GetAllWithAuthors()
         {
-            return Ok(_booksRepository.FindAll(b => b.Title.Contains("New Book"), new string[] { "Author" }));
+            return Ok(_unitOfWork.Books.FindAll(b => b.Title.Contains("New Book"), new string[] { "Author" }));
         }
         [HttpGet("GetAllWithAuthorsAsync")]
         public async Task<IActionResult> GetAllWithAuthorsAsync()
         {
-            return Ok(await _booksRepository.FindAllAsync(b => b.Title.Contains("New Book"), new string[] { "Author" }));
+            return Ok(await _unitOfWork.Books.FindAllAsync(b => b.Title.Contains("New Book"), new string[] { "Author" }));
         }
         #endregion
 
@@ -72,12 +74,12 @@ namespace RepositoryPatternWithUOW.API.Controllers
         [HttpGet("GetOrdered")]
         public IActionResult GetOrdered()
         {
-            return Ok(_booksRepository.FindAll(b => b.Title.Contains("New Book"), null, null, b => b.Id, OrderBy.Descending));
+            return Ok(_unitOfWork.Books.FindAll(b => b.Title.Contains("New Book"), null, null, b => b.Id, OrderBy.Descending));
         }
         [HttpGet("GetOrderedAsync")]
         public async Task<IActionResult> GetOrderedAsync()
         {
-            return Ok(await _booksRepository.FindAllAsync(b => b.Title.Contains("New Book"), null, null, b => b.Id, OrderBy.Descending));
+            return Ok(await _unitOfWork.Books.FindAllAsync(b => b.Title.Contains("New Book"), null, null, b => b.Id, OrderBy.Descending));
         }
         #endregion
 
@@ -88,9 +90,12 @@ namespace RepositoryPatternWithUOW.API.Controllers
             var book = new Book()
             {
                 Title = "Test 3",
-                AuthorId = 1
+                AuthorId = 2
             };
-            return Ok(_booksRepository.Add(book));  
+            _unitOfWork.Books.Add(book);
+            //Without the calling Complete method the object will return with id = 0 that means it didn't saved in database
+            _unitOfWork.Complete();
+            return Ok(book);  
         }
         [HttpPost("AddOneAsync")]
         public async Task<IActionResult> AddOneAsync()
@@ -98,9 +103,12 @@ namespace RepositoryPatternWithUOW.API.Controllers
             var book = new Book()
             {
                 Title = "Test 3 Async",
-                AuthorId = 1,
+                AuthorId = 2,
             };
-            return Ok(await _booksRepository.AddAsync(book));
+            await _unitOfWork.Books.AddAsync(book);
+            //Without the calling Complete method the object will return with id = 0 that means it didn't saved in database
+            _unitOfWork.Complete();
+            return Ok(book);
         }
         #endregion
 
@@ -121,7 +129,10 @@ namespace RepositoryPatternWithUOW.API.Controllers
                     AuthorId = 1,
                 },
             };
-            return Ok(_booksRepository.AddRange(books));
+            _unitOfWork.Books.AddRange(books);
+            //Without the calling Complete method the object will return with id = 0 that means it didn't saved in database
+            _unitOfWork.Complete();
+            return Ok(books);
         }
         [HttpPost("AddRangeAsync")]
         public async Task<IActionResult> AddRangeAsync()
@@ -139,7 +150,10 @@ namespace RepositoryPatternWithUOW.API.Controllers
                     AuthorId = 1,
                 },
             };
-            return Ok(await _booksRepository.AddRangeAsync(books));
+            await _unitOfWork.Books.AddRangeAsync(books);
+            //Without the calling Complete method the object will return with id = 0 that means it didn't saved in database
+            _unitOfWork.Complete();
+            return Ok(books);
         }
         #endregion
 
@@ -147,9 +161,11 @@ namespace RepositoryPatternWithUOW.API.Controllers
         [HttpPut("Update")]
         public IActionResult Update()
         {
-            var book = _booksRepository.GetById(1);
+            var book = _unitOfWork.Books.GetById(1);
             book.Title = "Title Updated";
-            _booksRepository.Update(book);
+            _unitOfWork.Books.Update(book);
+            //Without the calling Complete method the object will return with id = 0 that means it didn't saved in database
+            _unitOfWork.Complete();
             return Ok(book);
         }
         #endregion
@@ -158,8 +174,10 @@ namespace RepositoryPatternWithUOW.API.Controllers
         [HttpDelete("Delete")]
         public IActionResult Delete()
         {
-            var book = _booksRepository.GetById(1);
-            _booksRepository.Delete(book);
+            var book = _unitOfWork.Books.GetById(1);
+            _unitOfWork.Books.Delete(book);
+            //Without the calling Complete method the object will return with id = 0 that means it didn't saved in database
+            _unitOfWork.Complete();
             return Ok(book);
         }
         #endregion
@@ -168,12 +186,12 @@ namespace RepositoryPatternWithUOW.API.Controllers
         [HttpGet("Count")]
         public IActionResult Count()
         {
-            return Ok(_booksRepository.Count());
+            return Ok(_unitOfWork.Books.Count());
         }
         [HttpGet("CountAsync")]
         public async Task<IActionResult> CountAsync()
         {
-            return Ok(await _booksRepository.CountAsync());
+            return Ok(await _unitOfWork.Books.CountAsync());
         }
         #endregion
     }
